@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+
+    <title>Todo List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,100,0,200" />
+    <style type="text/css">
+        body {
+            margin-top: 20px;
+            background: #f8f8f8;
+        }
+
+        .todo-nav {
+            margin-top: 10px
+        }
+
+        .todo-list {
+            margin: 10px 0
+        }
+
+        .todo-list .todo-item {
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 0;
+            background: #f7f7f7
+        }
+
+        .todo-list.only-active .todo-item.complete {
+            display: none
+        }
+
+        .todo-list.only-active .todo-item:not(.complete) {
+            display: block
+        }
+
+        .todo-list.only-complete .todo-item:not(.complete) {
+            display: none
+        }
+
+        .todo-list.only-complete .todo-item.complete {
+            display: block
+        }
+
+        .todo-list .todo-item.complete span {
+            text-decoration: line-through
+        }
+
+        .remove-todo-item {
+            color: #ffa6a6;
+            visibility: hidden
+        }
+
+        .remove-todo-item:hover {
+            color: #ff0000
+        }
+
+        .todo-item:hover .remove-todo-item {
+            visibility: visible;
+            cursor: pointer
+        }
+
+        .edit-todo-item {
+            color: #ffa6a6;
+            visibility: hidden
+        }
+
+        .edit-todo-item:hover {
+            color: #ff0000
+        }
+
+        .todo-item:hover .edit-todo-item {
+            visibility: visible;
+            cursor: pointer
+        }
+
+        div.checker {
+            width: 18px;
+            height: 18px
+        }
+
+        div.checker input,
+        div.checker span {
+            width: 18px;
+            height: 18px
+        }
+
+        div.checker span {
+            display: -moz-inline-box;
+            display: inline-block;
+            zoom: 1;
+            text-align: center;
+            background-position: 0 -260px;
+        }
+
+        div.checker,
+        div.checker input,
+        div.checker span {
+            width: 19px;
+            height: 19px;
+        }
+
+        div.checker,
+        div.radio,
+        div.uploader {
+            position: relative;
+        }
+
+        div.button,
+        div.button *,
+        div.checker,
+        div.checker *,
+        div.radio,
+        div.radio *,
+        div.selector,
+        div.selector *,
+        div.uploader,
+        div.uploader * {
+            margin: 0;
+            padding: 0;
+        }
+
+        div.button,
+        div.checker,
+        div.radio,
+        div.selector,
+        div.uploader {
+            display: -moz-inline-box;
+            display: inline-block;
+            zoom: 1;
+            vertical-align: middle;
+        }
+
+        .card {
+            padding: 25px;
+            margin-bottom: 20px;
+            border: initial;
+            background: #fff;
+            border-radius: calc(.15rem - 1px);
+            box-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-white">
+                    <div class="card-body">
+                        <form action="javascript:void(0);">
+                            <input type="text" class="form-control add-task" placeholder="New Task...">
+                        </form>
+                        <ul class="nav nav-pills todo-nav">
+                            <li role="presentation" class="nav-item all-task active"><a href="#"
+                                    class="nav-link">All</a></li>
+                            <li role="presentation" class="nav-item active-task"><a href="#" class="nav-link">Active</a>
+                            </li>
+                            <li role="presentation" class="nav-item completed-task"><a href="#"
+                                    class="nav-link">Completed</a></li>
+                        </ul>
+                        <div class="todo-list">
+                            {% for task in tasks %}
+                            <div class="todo-item {% if task.is_completed %}complete{% endif %}" data-id="{{task.id}}">
+                                <div class="checker">
+                                    <span class>
+                                        <input class="complete-task" data-id="{{task.id}}" type="checkbox" {% if task.is_completed %}checked{% endif %}>
+                                    </span>
+                                </div>
+                                <span> {{task.task_name}}</span>
+                                <a class="float-right remove-todo-item" data-id="{{task.id}}" style="padding-left: 10px;">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </a>
+                                <a class="float-right edit-todo-item" data-id="{{task.id}}" style="padding-left: 10px">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+                                <span class="float-right text-mute font-weight-light time_remain">{{task.time_status}} /
+                                    {{task.time_remaining}}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="createTask" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+        aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="createTaskForm" method="post" name="CreateTask" class="needs-validation" style="padding: 20px;"
+                    novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="task_name">Task Name:</label>
+                        <input id="taskName" type="text" name="task_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="note">Note:</label>
+                        <textarea name="note" class="form-control" rows="4" cols="50"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date">Start Date:</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date:</label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="editTask" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+        aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="editTaskForm" method="put" name="EditTask" class="needs-validation" style="padding: 20px;"
+                    novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group invisible"  style="height: 0px;">
+                        <label for="task_id">Task Name:</label>
+                        <input id="edit-taskId" type="text" name="task_id" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task_name">Task Name:</label>
+                        <input id="edit-taskName" type="text" name="task_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="note">Note:</label>
+                        <textarea id="edit-note" name="note" class="form-control" rows="4" cols="50"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date">Start Date:</label>
+                        <input id="edit-startDate" type="date" name="start_date" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date:</label>
+                        <input id="edit-endDate" type="date" name="end_date" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="created">Created On:</label>
+                        <input id="edit-createOn" type="date" name="created" class="form-control" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modified">Last Modified:</label>
+                        <input id="edit-modified" type="date" name="modified" class="form-control" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <input id="edit-status" type="text" name="status" class="form-control" disabled>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Edit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            "use strict";
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            var todo = function () {
+                $('.todo-list .todo-item input').click(function () {
+                    if ($(this).is(':checked')) {
+                        $(this).parent().parent().parent().toggleClass('complete');
+                    } else {
+                        $(this).parent().parent().parent().toggleClass('complete');
+                    }
+                });
+
+                $('.todo-nav .all-task').click(function () {
+                    $('.todo-list').removeClass('only-active');
+                    $('.todo-list').removeClass('only-complete');
+                    $('.todo-nav li.active').removeClass('active');
+                    $(this).addClass('active');
+                });
+
+                $('.todo-nav .active-task').click(function () {
+                    $('.todo-list').removeClass('only-complete');
+                    $('.todo-list').addClass('only-active');
+                    $('.todo-nav li.active').removeClass('active');
+                    $(this).addClass('active');
+                });
+
+                $('.todo-nav .completed-task').click(function () {
+                    $('.todo-list').removeClass('only-active');
+                    $('.todo-list').addClass('only-complete');
+                    $('.todo-nav li.active').removeClass('active');
+                    $(this).addClass('active');
+                });
+
+                $('#uniform-all-complete input').click(function () {
+                    if ($(this).is(':checked')) {
+                        $('.todo-item .checker span:not(.checked) input').click();
+                    } else {
+                        $('.todo-item .checker span.checked input').click();
+                    }
+                });
+            };
+
+            todo();
+
+            function complete_todo() {
+                $('.complete-task').change(function () {
+                    if ($(this).is(':checked')) {
+                        $.ajax({
+                            url: "{% url 'task:main_page' %}",
+                            type: 'PATCH',
+                            beforeSend: function(request) {
+                                request.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                            },
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify({
+                                'task_id': $(this).data('id'),
+                                'task_status': true
+                            }),
+                            success: function (data) {
+                                console.log('AJAX request successful:', data);
+                                loadAjaxTodoList()
+                            },
+                            error: function (error) {
+                                console.error('AJAX request failed:', error);
+                            }
+                        });
+                    }
+                    else {
+                        $.ajax({
+                            url: "{% url 'task:main_page' %}",
+                            type: 'PATCH',
+                            beforeSend: function(request) {
+                                request.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                            },
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify({
+                                'task_id': $(this).data('id'),
+                                'task_status': false
+                            }),
+                            success: function (data) {
+                                console.log('AJAX request successful:', data);
+                                loadAjaxTodoList()
+                            },
+                            error: function (error) {
+                                console.error('AJAX request failed:', error);
+                            }
+                        });
+                    }
+                })
+            }
+
+            complete_todo()
+
+            function remove_todo() {
+                $('.remove-todo-item').click(function () {
+                    $.ajax({
+                        url: "{% url 'task:main_page' %}",
+                        type: 'DELETE',
+                        beforeSend: function(request) {
+                            request.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                        },
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({
+                            'task_id': $(this).data('id')
+                        }),
+                        success: function (data) {
+                            console.log('AJAX request successful:', data);
+                            loadAjaxTodoList()
+                        },
+                        error: function (error) {
+                            console.error('AJAX request failed:', error);
+                        }
+                    });
+                });
+            }
+
+            remove_todo()
+
+            function edit_todo() {
+                $('.edit-todo-item').click(function () {
+                    $.ajax({
+                        url: "{% url 'task:task_details' task_id=0 %}".replace('0', $(this).data('id')),
+                        type: 'GET',
+                        beforeSend: function(request) {
+                            request.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                        },
+                        contentType: 'application/json; charset=utf-8',
+                        success: function (response) {
+                            console.log('AJAX request successful:', response);
+                            let data = response.data
+                            
+                            // show edit form
+                            $('#editTask').modal('show')
+                            $('#edit-taskId').val(data.id)
+                            $('#edit-taskName').val(data.task_name)
+                            $('#edit-note').val(data.note)
+                            $('#edit-startDate').val(data.start_date)
+                            $('#edit-endDate').val(data.end_date)
+                            $('#edit-createOn').val(data.create_at)
+                            $('#edit-modified').val(data.update_at)
+                            $('#edit-status').val(data.is_completed)
+                        },
+                        error: function (error) {
+                            console.error('AJAX request failed:', error);
+                        }
+                    });
+                });
+            }
+
+            edit_todo()
+
+            function resetForm() {
+                var form = document.forms["CreateTask"];
+
+                form.classList.remove('was-validated');
+
+                $("#taskName").val('');
+                $("textarea[name='note']").val('');
+                $("input[name='start_date']").val('');
+                $("input[name='end_date']").val('');
+            }
+
+            function checkValidForm() {
+                var form = document.forms["CreateTask"];
+
+                form.classList.add('was-validated');
+            }
+
+            $(".add-task").keypress(function (e) {
+                if ((e.which == 13) && (!$(this).val().length == 0)) {
+                    // remove validation
+                    try {
+                        resetForm()
+                    } catch (error) {
+                        console.log(error)
+                    }
+
+                    // show new form
+                    $('#createTask').modal('show')
+                    $('#taskName').val($(this).val())
+                } else if (e.which == 13) {
+                    alert('Please enter new task');
+                }
+                $(document).on('.todo-list .todo-item.added input').click(function () {
+                    if ($(this).is(':checked')) {
+                        $(this).parent().parent().parent().toggleClass('complete');
+                    } else {
+                        $(this).parent().parent().parent().toggleClass('complete');
+                    }
+                });
+                $('.todo-list .todo-item.added .remove-todo-item').click(function () {
+                    $(this).parent().remove();
+                });
+            });
+
+            function validateForm() {
+                // Kiểm tra hợp lệ của từng trường
+                var isValid = true;
+
+                // Kiểm tra taskName
+                var taskName = $("#taskName").val();
+                if (taskName.trim() === "") {
+                    isValid = false;
+                    console.log("Task Name is required.");
+                }
+
+                // Kiểm tra note (nếu có yêu cầu)
+                var note = $("textarea[name='note']").val();
+
+                // Kiểm tra start_date
+                var startDate = $("input[name='start_date']").val();
+                if (startDate.trim() === "") {
+                    isValid = false;
+                    console.log("Start Date is required.");
+                }
+
+                // Kiểm tra end_date
+                var endDate = $("input[name='end_date']").val();
+                if (endDate.trim() === "") {
+                    isValid = false;
+                    console.log("End Date is required.");
+                }
+
+                return isValid;
+            }
+
+            function createTaskListItems(items) {
+                return `
+                    <div class="todo-item ${items.is_completed?"complete":""} data-id="${items.id}"">
+                        <div class="checker">
+                            <span class>
+                                <input class="complete-task" data-id="${items.id}" type="checkbox" ${items.is_completed?"checked":""}>
+                            </span>
+                        </div>
+                        <span> ${items.task_name}</span>
+                        <a class="float-right remove-todo-item" data-id="${items.id}" style="padding-left: 10px;">
+                            <span class="material-symbols-outlined">delete</span>
+                        </a>
+                        <a class="float-right edit-todo-item" data-id="${items.id}" style="padding-left: 10px;">
+                            <span class="material-symbols-outlined">edit</span>
+                        </a>
+                        <span class="float-right text-mute font-weight-light time_remain">${items.time_status} / ${items.time_remaining}</span>
+                    </div>
+                `;
+            }
+
+            function loadAjaxTodoList() {
+                $.ajax({
+                    type: 'GET',
+                    url: "{% url 'task:main_page' %}",
+                    success: function (response) {
+                        console.log(response)
+                        $('.todo-list').html(response.data.map(createTaskListItems).join(''))
+                        complete_todo()
+                        todo()
+                        remove_todo()
+                        edit_todo()
+                    },
+                    error: function (response) {
+                        alert(response.responseJSON.message)
+                    }
+                })
+            }
+
+            $("#createTaskForm").submit(function (event) {
+                event.preventDefault()
+                if (validateForm()) {
+                    $('.add-task').val('')
+                    var serializedData = $(this).serialize();
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'task:main_page' %}",
+                        data: serializedData,
+                        success: function (response) {
+                            $('#createTask').modal('hide');
+                            loadAjaxTodoList()
+                        },
+                        error: function (response) {
+                            alert(response.responseJSON.message)
+                        }
+                    })
+                }
+                else {
+                    checkValidForm()
+                }
+            });
+
+            function validateEditForm() {
+                // Kiểm tra hợp lệ của từng trường
+                var isValid = true;
+
+                // Kiểm tra taskName
+                var taskName = $("#edit-taskName").val();
+                if (taskName.trim() === "") {
+                    isValid = false;
+                    console.log("Task Name is required.");
+                }
+
+                // Kiểm tra start_date
+                var startDate = $('#edit-startDate').val();
+                if (startDate.trim() === "") {
+                    isValid = false;
+                    console.log("Start Date is required.");
+                }
+
+                // Kiểm tra end_date
+                var endDate = $('#edit-endDate').val();
+                if (endDate.trim() === "") {
+                    isValid = false;
+                    console.log("End Date is required.");
+                }
+
+                return isValid;
+            }
+
+            function checkValidEditForm() {
+                var form = document.forms["EditTask"];
+
+                form.classList.add('was-validated');
+            }
+
+            $("#editTaskForm").submit(function (event) {
+                event.preventDefault()
+                if (validateEditForm()) {
+                    var serializedData = $(this).serialize();
+                    $.ajax({
+                        type: 'PUT',
+                        url: "{% url 'task:main_page' %}",
+                        beforeSend: function(request) {
+                            request.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                        },
+                        contentType: "Content-Type: text/html; charset=utf-8",
+                        data: serializedData,
+                        success: function (response) {
+                            $('#editTask').modal('hide');
+                            loadAjaxTodoList()
+                        },
+                        error: function (response) {
+                            alert(response.responseJSON.message)
+                        }
+                    })
+                }
+                else {
+                    checkValidEditForm()
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
