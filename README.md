@@ -8,3 +8,6 @@
 4. Set up your database `python manage.py migrate`, `python manage.py makemigrations todolist`
 5. Run `python manage.py runserver` web will deploy on [http://localhost:8000](http://localhost:8000).
 
+## Learn More
+
+You can learn more in the [Django documentation](https://docs.djangoproject.com/en/5.0/)
